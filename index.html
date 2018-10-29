@@ -68,7 +68,11 @@
         </ol>
     </div>
     <hr/>
-
+    <div id="app-8">
+        <p>{{ foo }}</p>
+        <!-- this will no longer update `foo`! -->
+        <button v-on:click="foo = 'baz'">Change it</button>
+    </div>
 
 
 
@@ -144,6 +148,19 @@
                 ]
             }
         })
+
+        var obj = {
+            foo: 'bar'
+        }
+
+        Object.freeze(obj)
+
+        new Vue({
+            el: '#app-8',
+            data: obj
+        })
+
+        
     </script>
 </body>
 
