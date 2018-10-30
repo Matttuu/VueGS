@@ -4,6 +4,12 @@
 <head>
     <title>My first Vue app</title>
     <script src="https://unpkg.com/vue"></script>
+    <!-- Since there is already a rich ecosystem of ajax libraries    -->
+    <!-- and collections of general-purpose utility methods, Vue core -->
+    <!-- is able to remain small by not reinventing them. This also   -->
+    <!-- gives you the freedom to use what you're familiar with. -->
+    <script src="https://cdn.jsdelivr.net/npm/axios@0.12.0/dist/axios.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/lodash@4.13.1/lodash.min.js"></script>
 </head>
 
 <body>
@@ -13,7 +19,7 @@
         {{ message }}
     </div>
 
-    <hr/>
+    <hr />
     <!-- Here we are encountering something new. 
         The v-bind attribute you are seeing is called a directive. 
         Directives are prefixed with v- to indicate that they are special attributes provided by Vue,
@@ -25,12 +31,12 @@
             Hover your mouse over me for a few seconds to see my dynamically bound title!
         </span>
     </div>
-    <hr/>
+    <hr />
     <!-- This example demonstrates that we can bind data to not only text and attributes, but also the structure of the DOM. -->
     <div id="app-3">
         <span v-if="seen">Now you see me // If you set me to false, i will dissapear</span>
     </div>
-    <hr/>
+    <hr />
     <!-- the v-for directive can be used for displaying a list of items using the data from an Array:-->
     <div id="app-4">
         <ol>
@@ -39,7 +45,7 @@
             </li>
         </ol>
     </div>
-    <hr/>
+    <hr />
 
     <!-- To let users interact with your app, we can use the v-on directive to attach event listeners that invoke methods on our Vue instances:-->
 
@@ -47,13 +53,13 @@
         <p>{{ message }}</p>
         <button v-on:click="reverseMessage">Reverse Message</button>
     </div>
-    <hr/>
+    <hr />
 
     <div id="app-6">
         <p>{{ message }}</p>
         <input v-model="message">
     </div>
-    <hr/>
+    <hr />
 
     <div id="app-7">
         <ol>
@@ -67,13 +73,21 @@
             </todo-item>
         </ol>
     </div>
-    <hr/>
+    <hr />
     <div id="app-8">
         <p>{{ foo }}</p>
         <!-- this will no longer update `foo`! -->
         <button v-on:click="foo = 'baz'">Change it</button>
     </div>
+    <hr />
 
+    <div id="watch-example">
+        <p>
+          Ask a yes/no question:
+          <input v-model="question">
+        </p>
+        <p>{{ answer }}</p>
+      </div>
 
 
 
@@ -160,7 +174,49 @@
             data: obj
         })
 
-        
+        var watchExampleVM = new Vue({
+            el: '#watch-example',
+            data: {
+                question: '',
+                answer: 'I cannot give you an answer until you ask a question!'
+            },
+            watch: {
+                // whenever question changes, this function will run
+                question: function (newQuestion, oldQuestion) {
+                    this.answer = 'Waiting for you to stop typing...'
+                    this.debouncedGetAnswer()
+                }
+            },
+            created: function () {
+                // _.debounce is a function provided by lodash to limit how
+                // often a particularly expensive operation can be run.
+                // In this case, we want to limit how often we access
+                // yesno.wtf/api, waiting until the user has completely
+                // finished typing before making the ajax request. To learn
+                // more about the _.debounce function (and its cousin
+                // _.throttle), visit: https://lodash.com/docs#debounce
+                this.debouncedGetAnswer = _.debounce(this.getAnswer, 500)
+            },
+            methods: {
+                getAnswer: function () {
+                    if (this.question.indexOf('?') === -1) {
+                        this.answer = 'Questions usually contain a question mark. ;-)'
+                        return
+                    }
+                    this.answer = 'Thinking...'
+                    var vm = this
+                    axios.get('https://yesno.wtf/api')
+                        .then(function (response) {
+                            vm.answer = _.capitalize(response.data.answer)
+                        })
+                        .catch(function (error) {
+                            vm.answer = 'Error! Could not reach the API. ' + error
+                        })
+                }
+            }
+        })
+
+
     </script>
 </body>
 
